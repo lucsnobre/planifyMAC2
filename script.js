@@ -52,7 +52,7 @@ document.getElementById('form-cadastro').addEventListener('submit', async functi
 
 //FunçõesAPI
 async function getUsuarios() {
-    const url = `http://10.107.144.9:8080/v1/planify/usuario`
+    const url = `http://10.107.144.23:3030/v1/planify/usuario`
 
     const response = await fetch(url)
 
@@ -62,7 +62,7 @@ async function getUsuarios() {
 }
 
 async function getUsuario(id) {
-    const url = `http://10.107.144.9:8080/v1/planify/usuario/${id}`
+    const url = `http://10.107.144.23:3030/v1/planify/usuario/${id}`
 
     const response = await fetch(url)
 
@@ -72,7 +72,7 @@ async function getUsuario(id) {
 }
 
 async function postUsuario(usuario) {
-    const url = `http://10.107.144.9:8080/v1/planify/usuario`
+    const url = `http://10.107.144.23:3030/v1/planify/usuario`
 
     const options = {
         method: 'POST',
@@ -90,7 +90,7 @@ async function postUsuario(usuario) {
 }
 
 async function putUsuario(usuario, id) {
-    const url = `http://10.107.144.9:8080/v1/planify/usuario`
+    const url = `http://10.107.144.23:3030/v1/planify/usuario`
 
     const options = {
         method: 'PUT',
@@ -108,7 +108,7 @@ async function putUsuario(usuario, id) {
 }
 
 async function deleteUsuario(id) {
-    const url = `http://10.107.144.9:8080/v1/planify/usuario/:search_id`
+    const url = `http://10.107.144.23:3030/v1/planify/usuario/:search_id`
 
     const options = {
         method: 'DELETE',
@@ -264,7 +264,7 @@ document.getElementById('form-login').addEventListener('submit', async function 
     const senha = document.getElementById('login-senha').value.trim()
 
     try {
-        const url = `http://10.107.144.9:8080/v1/planify/usuario/login/email/senha?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`
+        const url = `http://10.107.144.23:3030/v1/planify/usuario/login/email/senha?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -351,7 +351,7 @@ document.getElementById('form-recuperar-senha').addEventListener('submit', async
         const email = document.getElementById('recuperar-email').value.trim();
         console.log('[1] Email capturado:', email);
 
-        const response = await fetch(`http://10.107.144.9:8080/v1/planify/recuperar-senha/${email}`, {
+        const response = await fetch(`http://10.107.144.23:3030/v1/planify/recuperar-senha/${email}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -387,7 +387,7 @@ document.getElementById('form-verificacao-codigo').addEventListener('submit', as
             throw new Error('Email de recuperação não encontrado');
         }
 
-        const response = await fetch(`http://10.107.144.9:8080/v1/planify/verificar-codigo`, {
+        const response = await fetch(`http://10.107.144.23:3030/v1/planify/verificar-codigo`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -421,7 +421,7 @@ document.getElementById('form-nova-senha').addEventListener('submit', async func
             throw new Error('Dados de recuperação não encontrados');
         }
 
-        const response = await fetch(`http://10.107.144.9:8080/v1/planify/redefinir-senha`, {
+        const response = await fetch(`http://10.107.144.23:3030/v1/planify/redefinir-senha`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -533,16 +533,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .catch(err => console.error('[FETCH TEST] Erro no fetch público:', err));
 });
 
-// Estados e cidades (exemplo, adicione mais conforme necessário)
-const cidadesPorEstado = {
-  'PE': ['Recife', 'Olinda', 'Jaboatão dos Guararapes'],
-  'SP': ['São Paulo', 'Campinas', 'Santos'],
-  'RJ': ['Rio de Janeiro', 'Niterói', 'Petrópolis'],
-  'MG': ['Belo Horizonte', 'Uberlândia', 'Contagem'],
-  'BA': ['Salvador', 'Feira de Santana', 'Vitória da Conquista'],
-  'RS': ['Porto Alegre', 'Caxias do Sul', 'Pelotas'],
-  // ... outros estados
-};
+
 
 const selectEstado = document.getElementById('estado');
 
@@ -643,11 +634,11 @@ if (selectEstadoFiltro && menuCidadesCascata) {
       if (cidadesPorEstadoCascata[estado]) {
         cidadesPorEstadoCascata[estado].forEach(cidade => {
           const cidadeLi = document.createElement('li');
-          cidadeLi.textContent = cidade;
+          cidadeLi.textContent = cidade.nome?.nome || cidade.nome || cidade.cidade || JSON.stringify(cidade);
           cidadeLi.addEventListener('click', () => {
             // Salva seleção e fecha menu
             selectEstadoFiltro.value = estado;
-            selectEstadoFiltro.setAttribute('data-cidade', cidade);
+            selectEstadoFiltro.setAttribute('data-cidade', cidade.nome);
             // Atualiza o texto exibido no select para Estado - Cidade
             let option = selectEstadoFiltro.querySelector('option.custom-cidade');
             if (!option) {
@@ -656,7 +647,7 @@ if (selectEstadoFiltro && menuCidadesCascata) {
               selectEstadoFiltro.appendChild(option);
             }
             option.value = estado;
-            option.textContent = `${this.parentElement.previousElementSibling ? this.parentElement.previousElementSibling.textContent : estado} - ${cidade}`;
+            option.textContent = `${this.parentElement.previousElementSibling ? this.parentElement.previousElementSibling.textContent : estado} - ${cidade.nome?.nome || cidade.nome || cidade.cidade || JSON.stringify(cidade)}`;
             option.selected = true;
             menuCidadesCascata.style.display = 'none';
             selectEstadoFiltro.classList.remove('menu-cidades-open');
@@ -837,7 +828,7 @@ async function carregarEventos() {
   if (!container) return;
   container.innerHTML = '<p style="color:#fff">Carregando eventos...</p>';
   try {
-    const response = await fetch('http://10.107.144.9:8080/v1/planify/evento');
+    const response = await fetch('http://10.107.144.23:3030/v1/planify/evento');
     if (!response.ok) throw new Error('Erro ao buscar eventos');
     const data = await response.json();
     console.log('Eventos retornados pela API:', data);
@@ -856,9 +847,9 @@ async function carregarEventos() {
           <img class="evento-img" src="${evento.imagem || './img/placeholder.jpg'}" alt="Imagem do Evento">
           <div class="evento-info">
             <h3>${evento.nome || ''}</h3>
-            <p>${evento.data ? formatarData(evento.data) : ''}${evento.cidade ? ' - ' + evento.cidade : ''}</p>
+            <p>${evento.data ? formatarData(evento.data) : ''}${evento.cidade ? ' - ' + extrairNome(evento.cidade) : ''}</p>
             ${evento.descricao ? `<p style='font-size:0.95em;color:#444;margin-top:6px;'>${evento.descricao}</p>` : ''}
-            ${evento.endereco ? `<p style='font-size:0.92em;color:#666;margin-top:2px;'>${evento.endereco}</p>` : ''}
+            ${evento.endereco ? `<p style='font-size:0.92em;color:#666;margin-top:2px;'>${formatarEndereco(evento.endereco)}</p>` : ''}
             ${evento.preco ? `<p style='font-size:1em;color:#b4580f;margin-top:2px;'>R$ ${evento.preco}</p>` : ''}
           </div>
           <div class="evento-arrow">
@@ -897,7 +888,7 @@ async function filtrarEventos() {
     
     try {
         // Construir a URL com os parâmetros de filtro
-        let url = 'http://10.107.144.9:8080/v1/planify/evento/filtro';
+        let url = 'http://10.107.144.23:3030/v1/planify/evento/filtro';
         const params = new URLSearchParams();
         
         if (tipoEvento) {
@@ -943,12 +934,12 @@ async function filtrarEventos() {
                     <button class="btn-curtir" title="Salvar evento">
                         <img class="icone-curtir-img" src="./img/coracao.png" alt="Curtir">
                     </button>
-                    <img class="evento-img" src="${evento.imagem || './img/placeholder.jpg'}" alt="Imagem do Evento">
+                    <img class="evento-img" src="${evento.capa || './img/placeholder.jpg'}" alt="Imagem do Evento">
                     <div class="evento-info">
                         <h3>${evento.nome || ''}</h3>
-                        <p>${evento.data ? formatarData(evento.data) : ''}${evento.cidade ? ' - ' + evento.cidade : ''}</p>
+                        <p>${evento.data ? formatarData(evento.data) : ''}${evento.cidade ? ' - ' + extrairNome(evento.cidade) : ''}</p>
                         ${evento.descricao ? `<p style='font-size:0.95em;color:#444;margin-top:6px;'>${evento.descricao}</p>` : ''}
-                        ${evento.endereco ? `<p style='font-size:0.92em;color:#666;margin-top:2px;'>${evento.endereco}</p>` : ''}
+                        ${evento.endereco ? `<p style='font-size:0.92em;color:#666;margin-top:2px;'>${formatarEndereco(evento.endereco)}</p>` : ''}
                         ${evento.preco ? `<p style='font-size:1em;color:#b4580f;margin-top:2px;'>R$ ${evento.preco}</p>` : ''}
                     </div>
                     <div class="evento-arrow">
@@ -982,7 +973,7 @@ function formatarData(dataString) {
 // Função para buscar locais registrados
 async function buscarLocaisRegistrados() {
     try {
-        const response = await fetch('http://10.107.144.9:8080/v1/planify/evento/locais');
+        const response = await fetch('http://10.107.144.23:3030/v1/planify/evento/locais');
         if (!response.ok) throw new Error('Erro ao buscar locais');
         
         const data = await response.json();
@@ -1060,12 +1051,13 @@ async function preencherEstadosFiltro() {
     const selectEstado = document.getElementById('estado');
     if (!selectEstado) return;
     try {
-        const response = await fetch('http://10.107.144.4:8080/v1/planify/estado');
+        const response = await fetch('http://10.107.144.23:3030/v1/planify/estado');
         if (!response.ok) throw new Error('Erro ao buscar estados');
         const data = await response.json();
-        // Limpa opções antigas, mantém a primeira
+        // Tenta pegar o array de estados de diferentes formas
+        const estados = Array.isArray(data) ? data : (data.estados || data.items || []);
         selectEstado.innerHTML = '<option value="">Selecione o estado</option>';
-        data.forEach(estado => {
+        estados.forEach(estado => {
             const option = document.createElement('option');
             option.value = estado.sigla || estado.nome || estado.id;
             option.textContent = estado.nome;
@@ -1088,11 +1080,12 @@ async function preencherCidadesFiltro() {
         return;
     }
     try {
-        const response = await fetch('http://10.107.144.4:8080/v1/planify/cidade');
+        const response = await fetch('http://10.107.144.23:3030/v1/planify/cidade');
         if (!response.ok) throw new Error('Erro ao buscar cidades');
         const data = await response.json();
-        // Filtra cidades pelo estado selecionado
-        const cidadesFiltradas = data.filter(cidade => cidade.estado === estadoSelecionado || cidade.estadoSigla === estadoSelecionado);
+        // Tenta pegar o array de cidades de diferentes formas
+        const cidades = Array.isArray(data) ? data : (data.cidades || data.items || []);
+        const cidadesFiltradas = cidades.filter(cidade => cidade.estado === estadoSelecionado || cidade.estadoSigla === estadoSelecionado);
         selectCidade.innerHTML = '';
         cidadesFiltradas.forEach(cidade => {
             const option = document.createElement('option');
@@ -1111,9 +1104,203 @@ async function preencherCidadesFiltro() {
     }
 }
 
+// Função para preencher a cascata de estados
+async function preencherCascataEstados() {
+    const estadosLista = document.querySelectorAll('.estados-lista');
+    if (!estadosLista.length) return;
+    try {
+        const response = await fetch('http://10.107.144.23:3030/v1/planify/estado');
+        if (!response.ok) throw new Error('Erro ao buscar estados');
+        const data = await response.json();
+        const estados = Array.isArray(data) ? data : (data.estados || data.items || []);
+        estadosLista.forEach(lista => {
+            lista.innerHTML = '';
+            estados.forEach(estado => {
+                const li = document.createElement('li');
+                li.setAttribute('data-estado', estado.sigla || estado.nome || estado.id);
+                li.textContent = estado.nome;
+                lista.appendChild(li);
+            });
+        });
+    } catch (error) {
+        console.error('Erro ao preencher cascata de estados:', error);
+    }
+}
+
+// Função para preencher a cascata de cidades ao passar mouse em um estado
+async function adicionarEventoCascataCidades() {
+    const estadosListas = document.querySelectorAll('.estados-lista');
+    const cidadesListas = document.querySelectorAll('.cidades-lista');
+    if (!estadosListas.length || !cidadesListas.length) return;
+    estadosListas.forEach(estadosLista => {
+        estadosLista.addEventListener('mouseover', async function(e) {
+            if (e.target.tagName !== 'LI') return;
+            const estadoSigla = e.target.getAttribute('data-estado');
+            cidadesListas.forEach(async cidadesLista => {
+                cidadesLista.innerHTML = '<li>Carregando...</li>';
+                try {
+                    const response = await fetch('http://10.107.144.23:3030/v1/planify/cidade');
+                    if (!response.ok) throw new Error('Erro ao buscar cidades');
+                    const data = await response.json();
+                    console.log(data)
+                    const cidades = Array.isArray(data) ? data : (data.cidades || data.items || []);
+                    console.log(cidadesLista)
+                    const cidadesFiltradas = cidades.filter(cidade => cidade.estado === estadoSigla || cidade.estadoSigla === estadoSigla);
+                    cidadesLista.innerHTML = '';
+                    cidadesFiltradas.forEach(cidade => {
+
+                      console.log(cidade);
+                        const li = document.createElement('li');
+                        li.textContent = extrairNome(cidade);
+                        cidadesLista.appendChild(li);
+                    });
+                    if (!cidadesFiltradas.length) {
+                        cidadesLista.innerHTML = '<li>Nenhuma cidade encontrada</li>';
+                    }
+                } catch (error) {
+                  console.log(error);
+                    cidadesLista.innerHTML = '<li>Erro ao carregar cidades</li>';
+                }
+            });
+        });
+    });
+}
+
+// Função utilitária para extrair o nome de cidade, estado ou objeto aninhado
+function extrairNome(obj) {
+  if (!obj) return '';
+  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) return extrairNome(obj[0]);
+    if (obj.nome) return extrairNome(obj.nome);
+    if (obj.cidade) return extrairNome(obj.cidade);
+    if (obj.estado) return extrairNome(obj.estado);
+    return JSON.stringify(obj);
+  }
+  return String(obj);
+}
+
+// Função para formatar o endereço do evento
+function formatarEndereco(endereco) {
+  if (Array.isArray(endereco)) endereco = endereco[0];
+  if (!endereco || typeof endereco !== 'object') return '';
+  return [
+    extrairNome(endereco.rua),
+    extrairNome(endereco.numero),
+    extrairNome(endereco.bairro),
+    extrairNome(endereco.cidade),
+    extrairNome(endereco.estado)
+  ].filter(Boolean).join(', ');
+}
+
+// Função para montar o mapa de estados-cidades para cidades com base nos eventos
+async function getMapaEstadosCidadesComEventos() {
+  try {
+    const response = await fetch('http://10.107.144.23:3030/v1/planify/evento');
+    if (!response.ok) throw new Error('Erro ao buscar eventos');
+    const data = await response.json();
+    const eventos = Array.isArray(data) ? data : (data.eventos || data.items || []);
+    console.log('EVENTOS:', eventos);
+    const mapa = {};
+    eventos.forEach(evento => {
+      let endereco = evento.endereco;
+      if (Array.isArray(endereco)) endereco = endereco[0];
+      console.log('ENDERECO:', endereco);
+      if (endereco && endereco.estado && endereco.cidade) {
+        const estado = endereco.estado?.nome || extrairNome(endereco.estado);
+        const cidade = endereco.cidade?.nome || extrairNome(endereco.cidade);
+        if (estado && cidade) {
+          if (!mapa[estado]) mapa[estado] = new Set();
+          mapa[estado].add(cidade);
+        }
+      }
+    });
+    // Converta os sets para arrays
+    Object.keys(mapa).forEach(estado => {
+      mapa[estado] = Array.from(mapa[estado]);
+    });
+    console.log('MAPA ESTADO-CIDADE:', mapa);
+    return mapa;
+  } catch (error) {
+    console.error('Erro ao montar mapa de estados/cidades:', error);
+    return {};
+  }
+}
+
+// Função para preencher filtros e cascatas apenas com estados/cidades que têm eventos
+async function preencherFiltrosComEventos() {
+  const mapa = await getMapaEstadosCidadesComEventos();
+  const estados = Object.keys(mapa);
+  // Preencher select de estados
+  const selectEstado = document.getElementById('estado');
+  if (selectEstado) {
+    selectEstado.innerHTML = '<option value="">Selecione o estado</option>';
+    estados.forEach(estado => {
+      const option = document.createElement('option');
+      option.value = estado;
+      option.textContent = estado;
+      selectEstado.appendChild(option);
+    });
+  }
+  // Preencher select de cidades (se existir) - só mostra cidades do estado selecionado
+  const selectCidade = document.getElementById('cidade');
+  if (selectCidade) {
+    selectEstado?.addEventListener('change', function() {
+      const estadoSelecionado = selectEstado.value;
+      selectCidade.innerHTML = '<option value="">Selecione a cidade</option>';
+      if (mapa[estadoSelecionado]) {
+        mapa[estadoSelecionado].forEach(cidade => {
+          const option = document.createElement('option');
+          option.value = cidade;
+          option.textContent = cidade;
+          selectCidade.appendChild(option);
+        });
+        selectCidade.disabled = false;
+      } else {
+        selectCidade.disabled = true;
+      }
+    });
+    // Inicialmente desabilitado
+    selectCidade.innerHTML = '<option value="">Selecione o estado primeiro</option>';
+    selectCidade.disabled = true;
+  }
+  // Preencher cascata de estados
+  const estadosListas = document.querySelectorAll('.estados-lista');
+  estadosListas.forEach(lista => {
+    lista.innerHTML = '';
+    estados.forEach(estado => {
+      const li = document.createElement('li');
+      li.setAttribute('data-estado', estado);
+      li.textContent = estado;
+      lista.appendChild(li);
+    });
+  });
+  // Preencher cascata de cidades ao passar mouse em estado
+  const cidadesListas = document.querySelectorAll('.cidades-lista');
+  estadosListas.forEach((estadosLista, idx) => {
+    estadosLista.addEventListener('mouseenter', function(e) {
+      let estado;
+      if (e.target.tagName === 'LI') {
+        estado = e.target.getAttribute('data-estado');
+      } else {
+        // Se mouse entra na ul, não faz nada
+        return;
+      }
+      cidadesListas[idx].innerHTML = '';
+      if (mapa[estado]) {
+        mapa[estado].forEach(cidade => {
+          const li = document.createElement('li');
+          li.textContent = cidade;
+          cidadesListas[idx].appendChild(li);
+        });
+      } else {
+        cidadesListas[idx].innerHTML = '<li>Nenhuma cidade encontrada</li>';
+      }
+    });
+  });
+}
+
 // Chamar ao carregar a página
 window.addEventListener('DOMContentLoaded', () => {
-    preencherEstadosFiltro();
-    // Se já existir um estado selecionado, carrega as cidades
-    document.getElementById('estado')?.addEventListener('change', preencherCidadesFiltro);
+  preencherFiltrosComEventos();
 });
