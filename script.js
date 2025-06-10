@@ -844,7 +844,7 @@ async function carregarEventos() {
           <button class="btn-curtir" title="Salvar evento">
             <img class="icone-curtir-img" src="./img/coracao.png" alt="Curtir">
           </button>
-          <img class="evento-img" src="${evento.imagem || './img/placeholder.jpg'}" alt="Imagem do Evento">
+          <img class="evento-img" src="${evento.imagem || './img/pau nu jugu.jpg'}" alt="Imagem do Evento">
           <div class="evento-info">
             <h3>${evento.nome || ''}</h3>
             <p>${evento.data ? formatarData(evento.data) : ''}${evento.cidade ? ' - ' + extrairNome(evento.cidade) : ''}</p>
@@ -1193,6 +1193,22 @@ function formatarEndereco(endereco) {
   ].filter(Boolean).join(', ');
 }
 
+// Função robusta para extrair nome de estado e cidade de um endereço
+function extrairEstadoCidade(endereco) {
+  let estado = '';
+  let cidade = '';
+  if (!endereco) return { estado, cidade };
+  // Estado
+  if (endereco.estado && typeof endereco.estado === 'object') {
+    estado = endereco.estado.nome || endereco.estado.sigla || '';
+  }
+  // Cidade
+  if (endereco.cidade && typeof endereco.cidade === 'object') {
+    cidade = endereco.cidade.nome || '';
+  }
+  return { estado, cidade };
+}
+
 // Função para montar o mapa de estados-cidades para cidades com base nos eventos
 async function getMapaEstadosCidadesComEventos() {
   try {
@@ -1206,20 +1222,20 @@ async function getMapaEstadosCidadesComEventos() {
       let endereco = evento.endereco;
       if (Array.isArray(endereco)) endereco = endereco[0];
       console.log('ENDERECO:', endereco);
-      if (endereco && endereco.estado && endereco.cidade) {
-        const estado = endereco.estado?.nome || extrairNome(endereco.estado);
-        const cidade = endereco.cidade?.nome || extrairNome(endereco.cidade);
-        if (estado && cidade) {
-          if (!mapa[estado]) mapa[estado] = new Set();
-          mapa[estado].add(cidade);
-        }
+      const { estado, cidade } = extrairEstadoCidade(endereco);
+      console.log('ESTADO FINAL:', estado, 'CIDADE FINAL:', cidade);
+      if (estado && cidade && estado.trim() && cidade.trim()) {
+        if (!mapa[estado]) mapa[estado] = new Set();
+        mapa[estado].add(cidade);
+      } else {
+        console.log('NÃO ADICIONADO AO MAPA:', { estado, cidade, endereco });
       }
     });
     // Converta os sets para arrays
     Object.keys(mapa).forEach(estado => {
       mapa[estado] = Array.from(mapa[estado]);
     });
-    console.log('MAPA ESTADO-CIDADE:', mapa);
+    console.log('MAPA ESTADO-CIDADE FINAL:', mapa);
     return mapa;
   } catch (error) {
     console.error('Erro ao montar mapa de estados/cidades:', error);
