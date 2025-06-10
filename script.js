@@ -1198,13 +1198,19 @@ function extrairEstadoCidade(endereco) {
   let estado = '';
   let cidade = '';
   if (!endereco) return { estado, cidade };
-  // Estado
-  if (endereco.estado && typeof endereco.estado === 'object') {
-    estado = endereco.estado.nome || endereco.estado.sigla || '';
-  }
   // Cidade
-  if (endereco.cidade && typeof endereco.cidade === 'object') {
-    cidade = endereco.cidade.nome || '';
+  if (endereco.cidade && typeof endereco.cidade === 'object' && endereco.cidade.nome) {
+    cidade = endereco.cidade.nome;
+    // Estado dentro da cidade
+    if (endereco.cidade.estado && typeof endereco.cidade.estado === 'string') {
+      estado = endereco.cidade.estado;
+    } else if (endereco.cidade.estado && typeof endereco.cidade.estado === 'object' && endereco.cidade.estado.nome) {
+      estado = endereco.cidade.estado.nome;
+    }
+  }
+  // Estado direto no endereço (caso exista)
+  if (!estado && endereco.estado && typeof endereco.estado === 'object' && endereco.estado.nome) {
+    estado = endereco.estado.nome;
   }
   return { estado, cidade };
 }
@@ -1320,3 +1326,47 @@ async function preencherFiltrosComEventos() {
 window.addEventListener('DOMContentLoaded', () => {
   preencherFiltrosComEventos();
 });
+
+// Preencher a cascata de estados e cidades com todos os dados da API
+async function preencherCascataEstadosECidades() {
+  // Buscar estados e cidades
+  const responseEstados = await fetch('http://10.107.144.23:3030/v1/planify/estado');
+  const estadosData = await responseEstados.json();
+  const estados = Array.isArray(estadosData) ? estadosData : (estadosData.estados || estadosData.items || []);
+  
+  const responseCidades = await fetch('http://10.107.144.23:3030/v1/planify/cidade');
+  const cidadesData = await responseCidades.json();
+  const cidades = Array.isArray(cidadesData) ? cidadesData : (cidadesData.cidades || cidadesData.items || []);
+
+  // Preencher estados
+  const estadosLista = document.querySelector('.estados-lista');
+  estadosLista.innerHTML = '';
+  estados.forEach(estado => {
+    const li = document.createElement('li');
+    li.setAttribute('data-estado', estado.sigla || estado.nome || estado.id);
+    li.textContent = estado.nome;
+    estadosLista.appendChild(li);
+  });
+
+  // Evento para mostrar cidades ao passar mouse no estado
+  const cidadesLista = document.querySelector('.cidades-lista');
+  estadosLista.addEventListener('mouseover', function(e) {
+    if (e.target.tagName !== 'LI') return;
+    const estado = e.target.getAttribute('data-estado');
+    cidadesLista.innerHTML = '';
+    const cidadesFiltradas = cidades.filter(cidade =>
+      cidade.estado === estado || cidade.estadoSigla === estado || cidade.estado?.sigla === estado
+    );
+    if (cidadesFiltradas.length) {
+      cidadesFiltradas.forEach(cidade => {
+        const li = document.createElement('li');
+        li.textContent = cidade.nome;
+        cidadesLista.appendChild(li);
+      });
+    } else {
+      cidadesLista.innerHTML = '<li>Nenhuma cidade encontrada</li>';
+    }
+  });
+}
+
+window.addEventListener('DOMContentLoaded', preencherCascataEstadosECidades);
