@@ -1045,7 +1045,6 @@ async function buscarLocaisRegistrados() {
 // Chamar a função quando a página carregar
 window.addEventListener('DOMContentLoaded', () => {
     carregarEventos();
-    buscarLocaisRegistrados();
 });
 
 // Adicionar estilo para o campo Quando
